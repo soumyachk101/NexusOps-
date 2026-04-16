@@ -1,0 +1,130 @@
+"use client";
+
+import { UnifiedStats } from "@/components/dashboard/UnifiedStats";
+import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
+import { IncidentCard } from "@/components/autofix/IncidentCard";
+import { mockDashboardStats, mockActivityFeed, mockIncidents, mockChatMessages } from "@/lib/mock-data";
+import { Search, ArrowRight } from "lucide-react";
+import Link from "next/link";
+
+export default function DashboardPage() {
+  const activeIncidents = mockIncidents.filter(
+    (i) => !["resolved", "dismissed", "pr_created"].includes(i.status)
+  );
+
+  const recentQueries = mockChatMessages.filter((m) => m.role === "user");
+
+  return (
+    <div className="max-w-7xl mx-auto space-y-8">
+      {/* Page Header */}
+      <div>
+        <h1 className="text-2xl font-semibold text-text-primary tracking-tight">
+          Dashboard
+        </h1>
+        <p className="text-sm text-text-secondary mt-1">
+          Unified command center for Memory & AutoFix engines
+        </p>
+      </div>
+
+      {/* Stats Grid */}
+      <UnifiedStats stats={mockDashboardStats} />
+
+      {/* Main Content: 2-column */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Left Column: Activity Feed (60%) */}
+        <div className="lg:col-span-3">
+          <div className="bg-bg-surface border border-border-faint rounded-xl overflow-hidden">
+            <div className="px-5 py-4 border-b border-border-faint flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-text-primary">
+                Activity Feed
+              </h2>
+              <span className="text-2xs text-text-muted font-mono">
+                Live
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-status-success ml-1.5 animate-pulse-dot" />
+              </span>
+            </div>
+            <div className="p-2 max-h-[480px] overflow-y-auto">
+              <ActivityFeed items={mockActivityFeed} />
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Active Incidents + Quick Ask (40%) */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Active Incidents */}
+          <div className="bg-bg-surface border border-border-faint rounded-xl overflow-hidden">
+            <div className="px-5 py-4 border-b border-border-faint flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-autofix-primary" />
+                <h2 className="text-sm font-semibold text-text-primary">
+                  Active Incidents
+                </h2>
+              </div>
+              <Link
+                href="/autofix/incidents"
+                className="text-2xs text-autofix-primary hover:text-autofix-hover transition-colors flex items-center gap-1"
+              >
+                View all <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+            <div className="p-3 space-y-2">
+              {activeIncidents.length > 0 ? (
+                activeIncidents.map((incident, i) => (
+                  <IncidentCard key={incident.id} incident={incident} index={i} />
+                ))
+              ) : (
+                <div className="py-8 text-center text-text-muted text-sm">
+                  No active incidents
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Quick Ask */}
+          <div className="bg-bg-surface border border-border-faint rounded-xl overflow-hidden">
+            <div className="px-5 py-4 border-b border-border-faint flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-memory-primary" />
+                <h2 className="text-sm font-semibold text-text-primary">
+                  Quick Ask
+                </h2>
+              </div>
+              <Link
+                href="/memory/ask"
+                className="text-2xs text-memory-primary hover:text-memory-hover transition-colors flex items-center gap-1"
+              >
+                Open chat <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+            <div className="p-4">
+              <Link
+                href="/memory/ask"
+                className="flex items-center gap-3 px-4 py-3 bg-bg-elevated border border-border-faint rounded-xl text-text-muted text-sm hover:border-memory-primary/50 transition-all cursor-text"
+              >
+                <Search className="w-4 h-4 text-memory-primary/50" />
+                Ask your team&apos;s memory...
+              </Link>
+              {/* Recent queries */}
+              {recentQueries.length > 0 && (
+                <div className="mt-3 space-y-1.5">
+                  <p className="text-2xs text-text-muted uppercase tracking-wider font-medium px-1">
+                    Recent
+                  </p>
+                  {recentQueries.map((q) => (
+                    <Link
+                      key={q.id}
+                      href="/memory/ask"
+                      className="block px-3 py-2 rounded-lg text-xs text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors truncate"
+                    >
+                      &ldquo;{q.content}&rdquo;
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
